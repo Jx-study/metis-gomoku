@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.2.0](https://github.com/Jx-study/metis-gomoku/compare/v1.1.1...v1.2.0) (2026-10-24)
+
+
+### Features
+
+* **_bench:** add vs_brain harness against Piskvork engines ([bbb983f](https://github.com/Jx-study/metis-gomoku/commit/bbb983f7ed1d8659838d675faa4b1d79e2c8ac08))
+* **Gomoku:** replace graphics.py UI with pygame-ce ([2812645](https://github.com/Jx-study/metis-gomoku/commit/2812645bbba7642b7e4f6c85318b1dc35b7816b9))
+* **Gomoku:** replace graphics.py UI with pygame-ce renderer ([ec0c22e](https://github.com/Jx-study/metis-gomoku/commit/ec0c22ead1adb26681d7295b43d0daefd6025d15))
+
+
+### Bug Fixes
+
+* **gomoku_ui:** skip hover preview outside opening box and ignore posts after quit ([0da54ae](https://github.com/Jx-study/metis-gomoku/commit/0da54ae8fc6d98e7c38bb4bfbffdf2aca92a8134))
+* **Gomoku:** restore foul and retry counters on undo and end game on AI errors ([28b1f72](https://github.com/Jx-study/metis-gomoku/commit/28b1f72fc855df4e4e526a84b085e14a355f279b))
+
+## [1.1.1](https://github.com/Jx-study/gomoku_AI/compare/v1.1.0...v1.1.1) (2026-09-29)
+
+
+### Bug Fixes
+
+* **Gomoku:** hide console window in Windows builds ([8c4cd66](https://github.com/Jx-study/gomoku_AI/commit/8c4cd6696bae2175b264befe9d221a300cabc79e))
+* **lines:** stop counting a three whose straight-four spot makes five ([3567007](https://github.com/Jx-study/gomoku_AI/commit/35670079de810fbd8579db3d9ae30486dbc1155b))
+
 ## [1.1.0](https://github.com/Jx-study/gomoku_AI/compare/v1.0.0...v1.1.0) (2026-09-25)
 
 
