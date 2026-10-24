@@ -31,11 +31,14 @@ static inline bool isCandidateLegal(int board[BOARD_MAX][BOARD_MAX], int x, int 
     return true;
 }
 
-// 大到小排序
+// 分數大到小排序
+// 同分依座標排序：qsort 不穩定，交給 libc 決定的話各平台走法不同
 int Big_Small(const void* a, const void* b) {
     Move *moveA = (Move *)a;
     Move *moveB = (Move *)b;
-    return moveB->score - moveA->score; // 大到小排序
+    if (moveB->score != moveA->score) return moveB->score - moveA->score;
+    if (moveA->y != moveB->y) return moveA->y - moveB->y;
+    return moveA->x - moveB->x;
 }
 
 // 快速處理勝局/敗局
