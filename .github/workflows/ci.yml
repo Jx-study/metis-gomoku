@@ -29,3 +29,5 @@ jobs:
 
       - name: Run tests
         run: pytest
+        env:
+          SDL_VIDEODRIVER: dummy   # runner 沒有顯示器，pygame 渲染測試用虛擬畫面

@@ -1,7 +1,7 @@
 """棋型查表的雙實作全枚舉對拍。
 
 `classifyWindow`（C，`ai.c`）把一條方向線的 11 格窗口（中心恆 SELF、牆併入 OPP）
-分類成 16 類棋型代碼之一。本檔用一個**獨立推導**的 Python 版 `classify_window_twin`
+分類成 16 類棋型代碼之一。本檔用一個獨立推導的 Python 版 `classify_window_twin`
 對全部 3^10 = 59049 種窗口對拍。
 
 分類依 RIF 定義：四是「能加一子成五」，活四是「能以兩種方式成五」，

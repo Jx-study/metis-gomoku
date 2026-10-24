@@ -7,7 +7,7 @@
 1. ``round_counter == len(moves) + 1``
    悔棋若沒有等量回捲計數器，開局規則（第 1-3 手的落點限制）就會失效。
 
-2. ``current_player`` 由 ``round_counter`` **推導**，不另存變數
+2. ``current_player`` 由 ``round_counter`` 推導，不另存變數
    黑棋恆在奇數手、白棋恆在偶數手。曾經因為另存一份 ``current_player``
    而在悔棋撤銷奇數手後奇偶對不上，導致白棋先手、或玩家連下兩顆同色子。
 """

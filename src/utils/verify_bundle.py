@@ -16,13 +16,14 @@ from PyInstaller.archive.readers import CArchiveReader, ZlibArchiveReader
 LIB_BY_SYSTEM = {"Windows": "ai.dll", "Linux": "ai.so", "Darwin": "ai.dylib"}
 
 # 資料檔與共享庫在 CArchive 頂層，純 Python 模組在 PYZ 內
-REQUIRED_FILES = (LIB_BY_SYSTEM[platform.system()], "200w.gif")
-REQUIRED_MODULES = ("graphics", "game_state")
+REQUIRED_FILES = (LIB_BY_SYSTEM[platform.system()], "200w.gif",
+                  "assets/fonts/NotoSansTC-Subset.ttf", "assets/fonts/OFL.txt")
+REQUIRED_MODULES = ("game_state", "gomoku_ui", "theme", "pygame")
 
 
 def main(exe_path):
     archive = CArchiveReader(exe_path)
-    toc = [name.lower() for name in archive.toc]
+    toc = [name.lower().replace("\\", "/") for name in archive.toc]
 
     missing = [f for f in REQUIRED_FILES if f.lower() not in toc]
 

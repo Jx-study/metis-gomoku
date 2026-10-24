@@ -136,7 +136,7 @@ static void findBestMoveImpl(int board[BOARD_MAX][BOARD_MAX], int *bestX, int *b
         initTranspositionTable();
         ttInitialized = true;
     }
-    // 每次搜索前以實際盤面重算，key 為絕對值——不依賴外部呼叫方逐手同步
+    // 每次搜索前以實際盤面重算，key 為絕對值，不依賴外部呼叫方逐手同步
     currentZobristKey = computeZobristKey(board);
     rebuildWindowIndex(board);
     rebuildNeighborCount(board);

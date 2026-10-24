@@ -81,7 +81,7 @@ static int threePoints(int cells[11]) {
 
 // 眠三/跳三專用：能再加一子成衝四（不同時成五、也不同時成活四）的格數
 // 與 threePoints 互斥（同一格只會落在成五點=2 或=1 其中一類），量的是
-// 「這個三連唯一能推進的方向只剩衝四」——延伸方向已被鎖死的訊號
+// 「這個三連唯一能推進的方向只剩衝四」，即延伸方向已被鎖死的訊號
 static int rushPoints(int cells[11]) {
     int n = 0;
     for (int i = 0; i < 11; i++) {
@@ -139,7 +139,7 @@ int classifyWindow(int cells[11]) {
     }
 
     // tp==0：不能成活四，但仍能成衝四代表延伸方向已被鎖死一端，
-    // 只是個預先可防守的單點威脅，見 Note/technical/renju-rules.md
+    // 只是個預先可防守的單點威脅
     if (rushPoints(cells) > 0) return run == 3 ? 7 : 14;   // 眠三、跳三
 
     return classifyMinor(cells);
