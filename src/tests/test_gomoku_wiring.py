@@ -195,16 +195,17 @@ class TestUndoRederivesTurn:
         assert h.ctl.roundCounter == 1
         assert h.ctl.phase == gomoku.Phase.PLAYER
 
-    def test_undo_single_stone_restarts_ai(self, gomoku, make, mid):
-        """玩家執白、盤上只有 AI 第一手：悔棋只撤一手，輪回 AI，必須重新起算。"""
-        h = make(script=[(mid, mid), (mid, mid)])
+    def test_undo_rejected_without_player_stone(self, gomoku, make, mid):
+        """玩家執白、盤上只有 AI 第一手：悔掉只會讓 AI 重下同一手，所以不給悔。"""
+        h = make(script=[(mid, mid)])
         h.ctl.choose_role(2)
         h.run_ai()
+        assert h.ctl.can_undo is False
         h.ctl.undo()
-        assert h.ctl.roundCounter == 1
-        assert h.ctl.phase == gomoku.Phase.AI
-        h.run_ai()
         assert h.ctl.state.moves == [(mid, mid, 1)]
+        assert h.ctl.phase == gomoku.Phase.PLAYER
+        assert h.pending == []
+        assert h.ctl.notice == "沒有可以悔棋的步數"
 
     def test_undo_empty_board_notice(self, make):
         h = make()
@@ -255,6 +256,49 @@ class TestFouls:
             h.run_ai()
         assert h.ctl.phase == gomoku.Phase.OVER
         assert h.ctl.notice == "AI 無法產生合法走法，遊戲中止"
+
+    def test_undo_after_foul_loss_restores_a_chance(self, gomoku, make, mid):
+        """犯規判負後悔棋，機會若停在 0，之後再犯規會變成負數且永不判負。"""
+        h = make(script=[(mid, mid - 1), (mid + 1, mid - 1)])
+        h.ctl.choose_role(1)
+        h.ctl.click(mid, mid)
+        h.run_ai()
+        for _ in range(3):
+            h.ctl.click(mid, mid)               # 已有棋子
+        assert h.ctl.phase == gomoku.Phase.OVER
+        h.ctl.undo()
+        assert h.ctl.chances == 1
+        assert h.ctl.notice == "第一手請落子在正中心位置，你還有1次機會"
+        h.ctl.click(0, 0)                       # 第一手不在天元
+        assert h.ctl.phase == gomoku.Phase.OVER
+
+    def test_undo_after_ai_abort_resets_retry(self, gomoku, make, mid):
+        """AI 連續非法判中止後悔棋，重試次數若停在 0 會無限重開搜索。"""
+        h = make(script=[(mid, mid - 1)] + [(mid, mid)] * 6)
+        h.ctl.choose_role(1)
+        h.ctl.click(mid, mid)
+        h.run_ai()
+        h.ctl.click(mid + 1, mid)
+        for _ in range(3):
+            h.run_ai()
+        assert h.ctl.phase == gomoku.Phase.OVER
+        h.ctl.undo()
+        assert h.ctl.ai_retry == gomoku.AI_RETRY
+        h.ctl.click(mid + 1, mid)
+        for _ in range(3):
+            h.run_ai()
+        assert h.ctl.phase == gomoku.Phase.OVER
+        assert h.pending == []
+
+    def test_ai_exception_ends_game(self, gomoku, make, mid):
+        """背景執行緒拋例外仍要送回結果，否則畫面永遠停在 AI 思考中。"""
+        h = make()
+        h.engine.ai_move = lambda board, ai, rc: 1 / 0
+        h.ctl.choose_role(1)
+        h.ctl.click(mid, mid)
+        h.run_ai()
+        assert h.ctl.phase == gomoku.Phase.OVER
+        assert h.ctl.notice == "AI 無法下棋，遊戲中止"
 
     def test_ai_sentinel_is_draw(self, gomoku, make, mid):
         h = make(script=[(-1, -1)])

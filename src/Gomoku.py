@@ -3,6 +3,7 @@ import ctypes   # 調用C語言函式庫
 import os, sys
 import platform
 import threading
+import traceback
 
 from game_state import GameState   # 盤面/輪次/開局規則/悔棋（有測試涵蓋）
 
@@ -76,7 +77,7 @@ CBoardType = (ctypes.c_int * const.BOARD_MAX) * const.BOARD_MAX
 
 #---------------------------（引擎）-------------------------
 class Engine:
-    """共享庫的包裝。
+    """共享庫的包裝
 
     AI 執行緒在跑時，主執行緒不能呼叫這裡的任何方法：C 端的增量索引與
     置換表是全域變數，搜索中被讀寫會破壞搜索結果。
@@ -142,6 +143,10 @@ class Phase:
     OVER = "over"
 
 
+CHANCES = 3     # 玩家的開局規則/禁手犯規機會
+AI_RETRY = 3    # AI 回傳非法走法的容忍次數
+
+
 def _spawn_daemon(target):
     threading.Thread(target=target, daemon=True).start()
 
@@ -169,8 +174,8 @@ class GameController:
         self.engine.reset()
         self.phase = Phase.ROLE_SELECT
         self.player = self.ai = None
-        self.chances = 3            # 玩家的開局規則/禁手犯規機會
-        self.ai_retry = 3           # AI 回傳非法走法的容忍次數
+        self.chances = CHANCES
+        self.ai_retry = AI_RETRY
         self.forbidden = set()
         self.win_line = []
         self.move_times = []        # 與 state.moves 等長，每手耗時
@@ -184,9 +189,11 @@ class GameController:
         return self.state.round_counter
 
     # 搜索無法中途喊停，AI 思考中不能動盤面或引擎
+    # 盤上沒有玩家的棋時悔棋只會撤掉 AI 的棋，AI 隨即重下同一手
     @property
     def can_undo(self):
-        return self.phase in (Phase.PLAYER, Phase.OVER)
+        return (self.phase in (Phase.PLAYER, Phase.OVER)
+                and any(mover == self.player for _x, _y, mover in self.state.moves))
 
     @property
     def can_restart(self):
@@ -209,6 +216,8 @@ class GameController:
         else:
             self.phase = Phase.PLAYER
             self.notice = "第一手請落子在正中心位置" if self.roundCounter == 1 else "玩家正在下棋..."
+            if self.chances < CHANCES:
+                self.notice += f"，你還有{self.chances}次機會"
             if self.player == 1:
                 self.forbidden = self.engine.forbidden_points(self.state.board)
 
@@ -217,7 +226,17 @@ class GameController:
         self.notice = "AI正在下棋..."
         board = self.state.snapshot()
         ai, rc = self.ai, self.roundCounter
-        self.spawn(lambda: self.post(*self.engine.ai_move(board, ai, rc)))
+
+        # 例外也要 post，否則控制器永遠停在 AI 回合
+        def work():
+            try:
+                x, y = self.engine.ai_move(board, ai, rc)
+            except Exception:
+                traceback.print_exc()
+                x = y = None
+            self.post(x, y)
+
+        self.spawn(work)
 
     def _finish(self, notice):
         self.phase = Phase.OVER
@@ -259,6 +278,9 @@ class GameController:
             return
         self.last_ai_time = self.clock() - self.turn_start
         print(f"Python AI Move: ({x}, {y})")
+        if x is None:
+            self._finish("AI 無法下棋，遊戲中止")
+            return
         # 哨兵值：無合法走法（例如僅存空格對黑棋是禁手），判和不判犯規
         if (x, y) == (-1, -1):
             self._finish("AI 無合法走法，和局!")
@@ -275,15 +297,18 @@ class GameController:
             self._start_ai()
 
     def undo(self):
+        if self.phase not in (Phase.PLAYER, Phase.OVER):
+            return
         if not self.can_undo:
+            self.notice = "沒有可以悔棋的步數"
             return
         # roundCounter 由 GameState.undo() 依實際撤銷手數回捲，這裡不能自行調整
         undone = self.state.undo(2)
-        if undone == 0:
-            self.notice = "沒有可以悔棋的步數"
-            return
         del self.move_times[-undone:]
         self.win_line = []
+        # 從終局悔回來時計數可能已歸零，不還原的話 == 0 的判定永遠不再成立
+        self.chances = max(self.chances, 1)
+        self.ai_retry = AI_RETRY
         self.next_turn()
 
     def restart(self):
