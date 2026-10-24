@@ -66,7 +66,7 @@ static void addStone(int x, int y, int player) {
 }
 
 // 撤銷在 stoneList 造成的增量修正：線性搜尋該筆、與最後一筆對調再縮短
-// 不假設 pop-back 成立——搜索確實是 LIFO，但那是隱性不變量；線性搜尋每次只掃一色的十來筆，成本可忽略
+// 不依賴 pop-back 順序，LIFO 只是搜索的隱性不變量；每次只掃一色的十來筆
 static void dropStone(int x, int y, int player) {
     int p = player - 1;
     short target = (short)(y * BOARD_MAX + x);
