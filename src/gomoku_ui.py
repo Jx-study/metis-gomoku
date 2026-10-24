@@ -171,6 +171,13 @@ class Renderer:
         self.notice_rect = None
         self.piece_r = layout.GRID // 2 - 1
         self._pieces = {1: self._make_piece(1), 2: self._make_piece(2)}
+        self._ghosts = {}
+        for color, piece in self._pieces.items():
+            self._ghosts[color] = piece.copy()
+            self._ghosts[color].set_alpha(theme.GHOST_ALPHA)
+        self._move_nums = {}
+        self._dim_surf = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+        self._dim_surf.fill(theme.OVERLAY_DIM)
         self.rules_offset = 0
         self._rules_lines = self._wrap_rules()
         visible = rules_close_rect(layout).top - 10 - self._rules_text_top()
@@ -224,7 +231,7 @@ class Renderer:
         if ctl.phase != "player" or ctl.show_rules:
             return None
         cell = pixel_to_cell(self.layout, pos)
-        if cell is None or not ctl.state.is_empty(*cell):
+        if cell is None or not ctl.state.is_empty(*cell) or ctl.state.violates_opening_rule(*cell):
             return None
         return cell
 
@@ -266,13 +273,17 @@ class Renderer:
             pygame.draw.line(self.screen, theme.GRID_LINE, (p, L.MARGIN), (p, L.MARGIN + L.LEN))
         pygame.draw.circle(self.screen, theme.STAR_POINT, cell_center(L, L.MIDPOINT_X, L.MIDPOINT_Y), 4)
 
+    def _move_num(self, n):
+        if n not in self._move_nums:
+            self._move_nums[n] = self.font(theme.FONT_MOVE_NUM).render(str(n), True, theme.TEXT_MOVE_NUM)
+        return self._move_nums[n]
+
     def _draw_stones(self, ctl):
-        font = self.font(theme.FONT_MOVE_NUM)
         for n, (x, y, color) in enumerate(ctl.state.moves, start=1):
             cx, cy = cell_center(self.layout, x, y)
             piece = self._pieces[color]
             self.screen.blit(piece, piece.get_rect(center=(cx, cy)))
-            num = font.render(str(n), True, theme.TEXT_MOVE_NUM)
+            num = self._move_num(n)
             self.screen.blit(num, num.get_rect(center=(cx, cy)))
 
     def _draw_marks(self, ctl, mouse_pos):
@@ -289,8 +300,7 @@ class Renderer:
                              (cx - self.piece_r - 1, cy - self.piece_r - 1, 2 * self.piece_r + 3, 2 * self.piece_r + 3), 1)
         cell = self.hover_cell(ctl, mouse_pos)
         if cell is not None and cell not in ctl.forbidden:
-            ghost = self._pieces[ctl.player].copy()
-            ghost.set_alpha(theme.GHOST_ALPHA)
+            ghost = self._ghosts[ctl.player]
             self.screen.blit(ghost, ghost.get_rect(center=cell_center(L, *cell)))
         if ctl.win_line:
             ends = sorted(ctl.win_line)
@@ -328,9 +338,7 @@ class Renderer:
         self._text(right, size, color, midright=(L.WIN_W - 12, bar.centery))
 
     def _dim(self):
-        dim = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
-        dim.fill(theme.OVERLAY_DIM)
-        self.screen.blit(dim, (0, 0))
+        self.screen.blit(self._dim_surf, (0, 0))
 
     def _draw_role_select(self, mouse_pos):
         self._dim()
@@ -377,8 +385,16 @@ class Renderer:
 def run(controller_cls, engine, layout, base_dir):
     renderer = Renderer(layout, base_dir)
     ai_done = pygame.event.custom_type()
+
     # 背景執行緒只 post 事件，狀態由主執行緒在收到事件時套用
-    ctl = controller_cls(engine, post=lambda x, y: pygame.event.post(pygame.event.Event(ai_done, x=x, y=y)))
+    # AI 思考中關掉視窗時，搜索結束才 post，那時 pygame 已經 quit
+    def post(x, y):
+        try:
+            pygame.event.post(pygame.event.Event(ai_done, x=x, y=y))
+        except pygame.error:
+            pass
+
+    ctl = controller_cls(engine, post=post)
     clock = pygame.time.Clock()
     running = True
     while running:
