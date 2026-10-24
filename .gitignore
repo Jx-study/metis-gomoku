@@ -52,3 +52,7 @@ src/_bench/**/games*.txt
 src/_bench/**/*.npz
 src/_bench/**/*.dllhash
 src/_bench/texel/_tmp/
+
+# web:
+web/node_modules/
+web/src/wasm/
