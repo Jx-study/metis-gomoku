@@ -57,17 +57,16 @@ gcc -I lib -shared -o ai.dll -fPIC lib/zobrist.c lib/pattern.c lib/boardstate.c 
 ### 打包成可執行檔
 ```bash
 cd src/
-pyinstaller --onefile --add-data "200w.gif;." --add-binary "ai.dll:." --hidden-import graphics Gomoku.py
-# 或使用預設 spec：
-pyinstaller Gomoku.spec
+pyinstaller Gomoku.spec   # 資源檔、字型、排除模組都設定在 spec 裡
 ```
 
 ## 專案介紹
 
 ### 人機對戰版本 (`src/`)
-- 圖形化遊戲界面（使用 graphics.py）
+- 圖形化遊戲界面（使用 pygame-ce）
 - 滑鼠點擊落子、悔棋、重新開始、查看規則
-- AI 運算時間顯示、回合數提示
+- 落子預覽、黑棋禁手點預先標記、雙方計時與 AI 思考時間
+- AI 在背景執行緒搜索，思考時畫面不凍結
 - C 語言 AI 引擎（ctypes 呼叫）、Zobrist 哈希 + 置換表優化
 
 ### 競賽版本 (`project/version 3/`)
