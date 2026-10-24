@@ -1,4 +1,4 @@
-"""N0：平行自對弈產生訓練棋譜。
+"""平行自對弈產生訓練棋譜。
 
 用法: python datagen.py <dll> <games> <out.txt> [--params p.json] [--extra 2-6] [--seed 1] [--jobs 14]
 

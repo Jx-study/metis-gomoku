@@ -1,10 +1,10 @@
-"""N3：位置感知棋型特徵抽取（Phase 0 與 Phase 2 共用）。
+"""位置感知棋型特徵抽取。
 
 用法: python features_pos.py <dll> <games.txt> <out.npz> [--mode cell-dir-code|cell-code] [--sym]
 
-特徵索引規則見 Note/plans/05-impl-n3.md，與 C 端 nnue.h 的 NNUE_FEAT 巨集必須一致。
-棋型碼一律由 C 端 encodeWindow + patternTable 產生，不在 Python 重寫棋型分類——
-N1 的教訓是兩邊實作會漂移，抽出來的特徵跟引擎實際用的不一致，學到的權重就白學。
+特徵索引規則與 C 端 nnue.h 的 NNUE_FEAT 巨集必須一致。
+棋型碼一律由 C 端 encodeWindow + patternTable 產生，不在 Python 重寫棋型分類，
+否則抽出的特徵會與引擎實際用的不一致。
 
 輸出是 ragged 格式（flat + offsets），不是定長 padding：每個局面的 active 特徵數
 等於該色子數乘 4，局面之間差很多，padding 到最大值會多存好幾倍的空值。
@@ -67,8 +67,7 @@ def extract(lib, table, board, n, mode):
 def symmetries(board, n):
     """回傳 8 個對稱變換後的盤面（含原盤）。
 
-    直接變換盤面再重抽特徵，不做 index 重映射：方向在旋轉下會互換，
-    手寫重映射容易錯且錯了看不出來，重抽是 correct by construction。
+    直接變換盤面再重抽特徵，不做 index 重映射（方向在旋轉下會互換）。
     """
     a = np.array(board, dtype=np.int8)
     out = []
@@ -98,7 +97,7 @@ def main():
         board = [[0] * n for _ in range(n)]
         for i, (x, y, p) in enumerate(moves):
             # 只取黑方待下的局面：最終迭代深度下黑白兩方的葉節點都落在黑方待下，
-            # evaluate 在實戰中幾乎只看到這種局面（理由同 N1 的 features.py）
+            # evaluate 在實戰中幾乎只看到這種局面
             if i >= nopen and i % 2 == 0:
                 for b in (symmetries(board, n) if a.sym else [board]):
                     fb, fw = extract(lib, table, b, n, a.mode)

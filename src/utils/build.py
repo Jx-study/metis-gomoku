@@ -20,7 +20,7 @@ MODULES = [
 
 EXT_BY_SYSTEM = {"Windows": "dll", "Linux": "so", "Darwin": "dylib"}
 
-# gcc 未指定 -O 時等同 -O0：變數全程存回記憶體、不內聯，搜索實測慢 1.8 倍
+# gcc 未指定 -O 時等同 -O0：變數全程存回記憶體、不內聯
 RELEASE_FLAGS = ["-O2"]
 # 關優化並帶符號，讓除錯器的行號與變數值對得回原始碼
 DEBUG_FLAGS = ["-O0", "-g"]

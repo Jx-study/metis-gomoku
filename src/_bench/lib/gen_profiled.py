@@ -72,7 +72,7 @@ def main():
         renamed.append(name)
 
     # 宣告依賴 BOARD_MAX 與 Move（在 types.h），故補一份 include 再接宣告，
-    # 擺在展開內容最前面——早於任何函數定義，各模組 .c 本身仍各自 #include
+    # 擺在展開內容最前面（早於任何函數定義），各模組 .c 本身仍各自 #include
     # 需要的 header，重複 include 由 include guard 擋掉。
     src = '#include "types.h"\n' + proto_block + src
 

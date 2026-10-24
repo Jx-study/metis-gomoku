@@ -1,4 +1,5 @@
-graphics.py
+pygame-ce
+fonttools
 opencv-python
 pytest
 pyinstaller

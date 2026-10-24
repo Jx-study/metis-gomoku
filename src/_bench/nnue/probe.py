@@ -1,11 +1,11 @@
-"""N3 Phase 0：量位置感知特徵能把保留集 MSE 壓到多低。
+"""量位置感知特徵能把保留集 MSE 壓到多低。
 
 用法: python probe.py <feats.npz> [--acc 64] [--l1 32] [--epochs 30] [--seed 0]
 
-判讀標準（見 Note/plans/05-impl-n3.md 的階段與閘門）：
-    test MSE < 0.180        -> 進 Phase 1
-    0.180 <= MSE <= 0.188   -> 邊際，要人工判斷
-    MSE > 0.188             -> 中止 N3
+判讀標準：
+    test MSE < 0.180：通過
+    0.180 <= MSE <= 0.188：邊際，要人工判斷
+    MSE > 0.188：不通過
 
 模型結構、batch 組裝、資料切分見 probe_common.py（與 probe_reg.py 共用）。
 """

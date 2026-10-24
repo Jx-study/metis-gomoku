@@ -1,7 +1,7 @@
 """probe.py 與 probe_reg.py 共用元件：模型結構、batch 組裝、資料切分。
 
-網路結構與 C 端推理逐層對應，這樣 Phase 3 量化時不必換架構：
-第一層稀疏累加器（黑白共用權重）-> clipped ReLU -> fc1（bias 分色）-> clipped ReLU -> fc2。
+網路結構與 C 端推理逐層對應，量化時不必換架構：
+第一層稀疏累加器（黑白共用權重）、clipped ReLU、fc1（bias 分色）、clipped ReLU、fc2 依序相接。
 """
 import numpy as np
 import torch
@@ -9,9 +9,9 @@ import torch.nn as nn
 
 CLIP = 127.0
 
-# 對照基準來自 N1 Task 8（同一批棋譜、同一種 WDL 標籤、同樣以對局為單位切 80/20）
-N1_TEXEL_TUNED = 0.19106
-N1_FREE_LINEAR = 0.19235
+# 對照基準來自 Texel 調參實驗（同一批棋譜、同一種 WDL 標籤、同樣以對局為單位切 80/20）
+TEXEL_TUNED = 0.19106
+FREE_LINEAR = 0.19235
 
 
 class Probe(nn.Module):
@@ -92,10 +92,10 @@ def make_run_epoch(model, opt, loss_fn, bf, boff, wf, woff, y_black, batch, rng)
 
 def print_baseline(const, te_b, te_w, label='probe test (黑/白)'):
     print(f"\nconst baseline         {const:.5f}")
-    print(f"N1 Texel tuned (參考)   {N1_TEXEL_TUNED:.5f}")
-    print(f"N1 free linear (參考)   {N1_FREE_LINEAR:.5f}")
+    print(f"Texel tuned (參考)      {TEXEL_TUNED:.5f}")
+    print(f"free linear (參考)      {FREE_LINEAR:.5f}")
     print(f"{label}      {te_b:.5f} / {te_w:.5f}")
 
 
 def print_gate_note():
-    print("閘門: < 0.180 進 Phase 1；0.180-0.188 邊際；> 0.188 中止 N3")
+    print("閘門: < 0.180 通過；0.180-0.188 邊際；> 0.188 不通過")

@@ -159,7 +159,7 @@ class TestIncrementalMatchesRecomputed:
 class TestXorAlgebra:
     """XOR 本身的性質：可交換、自反。
 
-    這些**不是**索引轉置的回歸測試——它們在 `zobristTable[x][y]` 與 `[y][x]` 下都會通過。
+    這些不是索引轉置的回歸測試——它們在 `zobristTable[x][y]` 與 `[y][x]` 下都會通過。
     留著是因為搜索的落子/撤銷直接依賴這兩個性質；釘轉置 bug 的是
     TestIncrementalMatchesRecomputed 裡拿 `compute` 當對照的那幾項。
     """
