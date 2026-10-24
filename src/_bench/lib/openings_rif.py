@@ -1,11 +1,8 @@
 """RIF 標準開局池：104 組合法開局座標，供 selfplay.py 使用。
 
-為什麼需要這個模組（見 Note/plans/02b-selfplay-opening-pool.md）:
-    selfplay 原本的開局池是 24 組手工湊的開局。
-    引擎是**確定性**的，所以能提供的獨立對局數 = 2 × 開局數 = 48 局，
-    勝率解析度只有 ±7.2%，不足以驗證棋力改動。
-    改用 RIF（Renju International Federation）官方開局形，
-    池子擴到 104 組 = 208 局。
+為什麼用 RIF 開局:
+    引擎是**確定性**的，獨立對局數 = 2 × 開局數，開局數決定勝率解析度。
+    RIF（Renju International Federation）官方開局形共 104 組 = 208 局。
 
 座標系: 以黑1為原點的 (dx, dy) 偏移，selfplay.openings() 再平移到棋盤中心。
 

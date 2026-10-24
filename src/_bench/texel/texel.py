@@ -1,4 +1,4 @@
-"""N1：Texel tuning 原型。
+"""Texel tuning 原型。
 
 用法: python texel.py <train.npz> [--mode untied|tied] [--out tuned.json] [--dll ../../ai.dll]
 

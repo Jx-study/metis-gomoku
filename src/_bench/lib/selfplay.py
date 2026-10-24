@@ -11,7 +11,7 @@
     ab_fresh.py 比對「兩版是否回傳相同走法」，只適用於行為保持型的改動。
     A5b 這類**刻意改變棋力**的改動，走法本來就會不同，只能靠對打統計勝率。
 
-用途二（第五階段 N0）: 同一套 harness 也是產生訓練棋譜的基礎；
+用途二: 同一套 harness 也是產生訓練棋譜的基礎；
     加 --pgn <file> 可把每局走法序列與結果存檔供後續分析/調參使用。
 """
 import ctypes
@@ -26,7 +26,6 @@ import sys
 # 要提高統計解析度只能加開局，不能加局數。
 #
 # 座標來自 RIF 官方開局形（openings_rif.py，含轉錄正確性驗證），104 組 = 208 局滿配對。
-# 舊版是手工湊的 24 組（48 局，勝率解析度只有 ±7.2%），不足以驗證棋力改動。
 from openings_rif import OPENINGS as OPENING_OFFSETS
 
 MAX_ROUNDS = 250
